@@ -23,16 +23,38 @@ class TestAttention:
     
     def setup_method(self):
         """Setup test fixtures"""
-        self.batch_size = 4
-        self.seq_len = 10
-        self.d_model = 512
-        self.num_heads = 8
+        self.batch_size = 2
+        self.seq_len = 5
+        self.d_model = 64
+        self.num_heads = 4
         self.d_k = self.d_model // self.num_heads
         
         # Create dummy tensors
         self.Q = torch.randn(self.batch_size, self.seq_len, self.d_model)
         self.K = torch.randn(self.batch_size, self.seq_len, self.d_model)
         self.V = torch.randn(self.batch_size, self.seq_len, self.d_model)
+        
+    def test_attention_dimensions(self):
+        """Test that attention dimensions are correct"""
+        # Q, K, V should have same batch_size and seq_len
+        assert self.Q.shape[0] == self.K.shape[0] == self.V.shape[0]
+        assert self.Q.shape[1] == self.K.shape[1] == self.V.shape[1]
+        
+        # d_model should be divisible by num_heads
+        assert self.d_model % self.num_heads == 0
+        
+    def test_scaling_factor(self):
+        """Test that scaling factor √d_k is correct"""
+        scaling_factor = (self.d_k) ** 0.5
+        expected_scaling = (self.d_model // self.num_heads) ** 0.5
+        assert abs(scaling_factor - expected_scaling) < 1e-6
+        
+    def test_attention_scores_shape(self):
+        """Test attention scores shape"""
+        # QK^T should have shape (batch_size, seq_len, seq_len)
+        scores = torch.matmul(self.Q, self.K.transpose(-2, -1))
+        expected_shape = (self.batch_size, self.seq_len, self.seq_len)
+        assert scores.shape == expected_shape
         
     def test_scaled_dot_product_attention(self):
         """Test scaled dot-product attention computation"""

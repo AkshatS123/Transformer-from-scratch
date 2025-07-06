@@ -11,6 +11,11 @@ Key Concepts:
 - Key (K): What we're matching against  
 - Value (V): What we're retrieving
 - Attention Score: How much to focus on each position
+
+Mathematical Formula:
+Attention(Q,K,V) = softmax(QK^T/√d_k)V
+
+Why √d_k scaling? Prevents softmax from entering regions with small gradients.
 """
 
 import torch
@@ -50,7 +55,12 @@ class ScaledDotProductAttention(nn.Module):
             torch.Tensor: Attention output
             torch.Tensor: Attention weights for visualization
         """
-        # TODO: Implement scaled dot-product attention
+        # Step 1: Compute attention scores: Q * K^T
+        # Step 2: Scale by √d_k (prevents softmax saturation)
+        # Step 3: Apply mask if provided (for padding/causal attention)
+        # Step 4: Apply softmax to get attention weights
+        # Step 5: Apply dropout for regularization
+        # Step 6: Multiply with values to get output
         pass
 
 
@@ -75,8 +85,13 @@ class MultiHeadAttention(nn.Module):
         self.num_heads = num_heads
         self.d_k = d_model // num_heads
         
-        # TODO: Add linear projections and attention mechanism
-        pass
+        # Linear projections for Q, K, V
+        self.W_q = nn.Linear(d_model, d_model)
+        self.W_k = nn.Linear(d_model, d_model)
+        self.W_v = nn.Linear(d_model, d_model)
+        self.W_o = nn.Linear(d_model, d_model)
+        
+        self.attention = ScaledDotProductAttention(self.d_k, dropout)
         
     def forward(self, Q, K, V, mask=None):
         """
@@ -94,7 +109,11 @@ class MultiHeadAttention(nn.Module):
         """
         batch_size = Q.size(0)
         
-        # TODO: Implement multi-head attention
+        # Step 1: Linear projections for Q, K, V
+        # Step 2: Split into multiple heads (reshape)
+        # Step 3: Apply scaled dot-product attention to each head
+        # Step 4: Concatenate heads
+        # Step 5: Final linear projection
         pass
 
 
@@ -140,5 +159,5 @@ def create_causal_mask(size):
         torch.Tensor: Causal mask
     """
     # TODO: Implement causal mask
-    # Similar to look-ahead mask but with different shape
+    # Upper triangular matrix to prevent attending to future tokens
     pass 

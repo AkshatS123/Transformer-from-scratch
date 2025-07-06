@@ -1,10 +1,10 @@
 # 🤖 Transformer from Scratch
 
-> Learning to build transformers from the ground up 
+> Learning to build transformers from the ground up
 
 ## 🎯 Project Overview
 
-This repository documents my journey of implementing a complete Transformer architecture from scratch. 
+This repository documents my journey of implementing a complete Transformer architecture from scratch. The goal is to deeply understand the internals of transformers by building every component ourselves.
 
 ## 🏗️ Project Structure
 
@@ -31,26 +31,41 @@ transformer-from-scratch/
 └── README.md               # This file
 ```
 
-## 🚀 how i got started
+## 🚀 Getting Started
 
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/transformer-from-scratch.git
+cd transformer-from-scratch
 
 # Install dependencies
 pip install -r requirements.txt
 ```
 
-## 📚 some Goals
+## 📚 Learning Goals
 
-- [ ] Understand attention mechanisms
+- [x] Understand attention mechanisms
 - [ ] Implement encoder-decoder architecture
 - [ ] Build training pipeline
 - [ ] Apply to real-world tasks
 
-## 🔬 Resources
+## 🔬 Key Resources
 
 - [**"Attention Is All You Need"**](https://arxiv.org/abs/1706.03762) - Original transformer paper
 - [**"The Illustrated Transformer"**](http://jalammar.github.io/illustrated-transformer/) - Visual guide
 - [**PyTorch Tutorials**](https://pytorch.org/tutorials/) - Framework documentation
 
+## 🧠 Attention Mechanism Understanding
+
+**Core Formula:** `Attention(Q,K,V) = softmax(QK^T/√d_k)V`
+
+**Key Insights:**
+- **Query (Q)**: What we're looking for
+- **Key (K)**: What we're matching against
+- **Value (V)**: What we're retrieving
+- **√d_k scaling**: Prevents softmax saturation for stable gradients
+- **Multi-head**: Allows attending to different representation subspaces
+
 ---
 
-*Work in progress...* 
+*Learning in progress...* 
