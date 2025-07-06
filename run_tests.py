@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """
-Simple test runner for transformer project
+trying out simple test runner for transformer project
 """
 
+
+#THIS IS SO ANNOYING TO DEBUG
 import subprocess
 import sys
 import os
@@ -12,7 +14,7 @@ def run_tests():
     """Run all tests in the project"""
     print("🧪 Running transformer tests...")
     
-    # Run pytest on tests directory
+    # pytest on tests directory
     try:
         result = subprocess.run([sys.executable, "-m", "pytest", "tests/", "-v"], 
                               capture_output=True, text=True)
