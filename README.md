@@ -33,19 +33,14 @@ transformer-from-scratch/
 
 ## 🚀 Getting Started
 
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/transformer-from-scratch.git
-cd transformer-from-scratch
-
-# Install dependencies
+# MAKE SURE TO INSTALL dependencies
 pip install -r requirements.txt
 ```
 
 ## 📚 Learning Goals
 
 - [x] Understand attention mechanisms
-- [ ] Implement encoder-decoder architecture
+- [x] Implement encoder-decoder architecture
 - [ ] Build training pipeline
 - [ ] Apply to real-world tasks
 

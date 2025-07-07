@@ -56,12 +56,25 @@ class ScaledDotProductAttention(nn.Module):
             torch.Tensor: Attention weights for visualization
         """
         # Step 1: Compute attention scores: Q * K^T
+        scores = torch.matmul(Q, K.transpose(-2, -1))
+        
         # Step 2: Scale by √d_k (prevents softmax saturation)
+        scores = scores / math.sqrt(self.d_k)
+        
         # Step 3: Apply mask if provided (for padding/causal attention)
+        if mask is not None:
+            scores = scores.masked_fill(mask == 0, -1e9)
+        
         # Step 4: Apply softmax to get attention weights
+        attention_weights = F.softmax(scores, dim=-1)
+        
         # Step 5: Apply dropout for regularization
+        attention_weights = self.dropout(attention_weights)
+        
         # Step 6: Multiply with values to get output
-        pass
+        output = torch.matmul(attention_weights, V)
+        
+        return output, attention_weights
 
 
 class MultiHeadAttention(nn.Module):
@@ -110,11 +123,31 @@ class MultiHeadAttention(nn.Module):
         batch_size = Q.size(0)
         
         # Step 1: Linear projections for Q, K, V
+        Q = self.W_q(Q)
+        K = self.W_k(K)
+        V = self.W_v(V)
+        
         # Step 2: Split into multiple heads (reshape)
+        Q = Q.view(batch_size, -1, self.num_heads, self.d_k).transpose(1, 2)
+        K = K.view(batch_size, -1, self.num_heads, self.d_k).transpose(1, 2)
+        V = V.view(batch_size, -1, self.num_heads, self.d_k).transpose(1, 2)
+        
+        # Adjust mask for multiple heads if provided
+        if mask is not None:
+            mask = mask.unsqueeze(1).repeat(1, self.num_heads, 1, 1)
+        
         # Step 3: Apply scaled dot-product attention to each head
+        attention_output, attention_weights = self.attention(Q, K, V, mask)
+        
         # Step 4: Concatenate heads
+        attention_output = attention_output.transpose(1, 2).contiguous().view(
+            batch_size, -1, self.d_model
+        )
+        
         # Step 5: Final linear projection
-        pass
+        output = self.W_o(attention_output)
+        
+        return output, attention_weights
 
 
 def create_padding_mask(seq, pad_idx=0):

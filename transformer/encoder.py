@@ -15,6 +15,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import math
 
+from .attention import MultiHeadAttention
+
 
 class PositionwiseFeedForward(nn.Module):
     """
@@ -45,12 +47,13 @@ class PositionwiseFeedForward(nn.Module):
         Returns:
             torch.Tensor: Output tensor
         """
-        # TODO: Implement position-wise feed-forward
-        # 1. First linear transformation
-        # 2. ReLU activation
-        # 3. Dropout
-        # 4. Second linear transformation
-        pass
+        # First linear transformation with ReLU
+        x = F.relu(self.linear1(x))
+        # Apply dropout
+        x = self.dropout(x)
+        # Second linear transformation
+        x = self.linear2(x)
+        return x
 
 
 class TransformerEncoderLayer(nn.Module):
@@ -71,8 +74,11 @@ class TransformerEncoderLayer(nn.Module):
     
     def __init__(self, d_model: int, num_heads: int, d_ff: int, dropout: float = 0.1):
         super().__init__()
-        # TODO: Add self-attention, feed-forward, and normalization
-        pass
+        self.self_attention = MultiHeadAttention(d_model, num_heads, dropout)
+        self.feed_forward = PositionwiseFeedForward(d_model, d_ff, dropout)
+        self.norm1 = nn.LayerNorm(d_model)
+        self.norm2 = nn.LayerNorm(d_model)
+        self.dropout = nn.Dropout(dropout)
         
     def forward(self, x, mask=None):
         """
@@ -86,8 +92,15 @@ class TransformerEncoderLayer(nn.Module):
             torch.Tensor: Output tensor
             torch.Tensor: Attention weights (for visualization)
         """
-        # TODO: Implement encoder layer
-        pass
+        # Self-attention with residual connection and layer norm
+        attn_output, attn_weights = self.self_attention(x, x, x, mask)
+        x = self.norm1(x + self.dropout(attn_output))
+        
+        # Feed-forward with residual connection and layer norm
+        ff_output = self.feed_forward(x)
+        x = self.norm2(x + self.dropout(ff_output))
+        
+        return x, attn_weights
 
 
 class TransformerEncoder(nn.Module):
@@ -108,8 +121,11 @@ class TransformerEncoder(nn.Module):
     def __init__(self, d_model: int, num_layers: int, num_heads: int, 
                  d_ff: int, dropout: float = 0.1):
         super().__init__()
-        # TODO: Add encoder layers
-        pass
+        self.layers = nn.ModuleList([
+            TransformerEncoderLayer(d_model, num_heads, d_ff, dropout)
+            for _ in range(num_layers)
+        ])
+        self.norm = nn.LayerNorm(d_model)
         
     def forward(self, x, mask=None):
         """
@@ -123,5 +139,14 @@ class TransformerEncoder(nn.Module):
             torch.Tensor: Encoder output
             list: Attention weights from all layers (for visualization)
         """
-        # TODO: Implement encoder forward pass
-        pass 
+        attention_weights = []
+        
+        # Pass through each encoder layer
+        for layer in self.layers:
+            x, attn_weights = layer(x, mask)
+            attention_weights.append(attn_weights)
+        
+        # Final layer normalization
+        x = self.norm(x)
+        
+        return x, attention_weights 

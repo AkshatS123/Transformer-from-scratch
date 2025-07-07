@@ -16,6 +16,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 import math
 
+from .encoder import TransformerEncoder
+from .decoder import TransformerDecoder, generate_square_subsequent_mask
+
 
 class PositionalEncoding(nn.Module):
     """
@@ -57,9 +60,10 @@ class PositionalEncoding(nn.Module):
         Returns:
             torch.Tensor: Embeddings with positional encoding added
         """
-        # TODO: Implement positional encoding
-        # Add positional encoding to input embeddings
-        pass
+        # x shape: (batch_size, seq_len, d_model)
+        seq_len = x.size(1)
+        x = x + self.pe[:seq_len, :].transpose(0, 1)
+        return self.dropout(x)
 
 
 class Transformer(nn.Module):
@@ -84,12 +88,56 @@ class Transformer(nn.Module):
                  num_layers: int = 6, num_heads: int = 8, d_ff: int = 2048,
                  max_len: int = 5000, dropout: float = 0.1):
         super().__init__()
-        # TODO: Add embeddings, encoder, decoder, and output projection
-        pass
+        self.d_model = d_model
+        
+        # Embeddings
+        self.src_embedding = nn.Embedding(src_vocab_size, d_model)
+        self.tgt_embedding = nn.Embedding(tgt_vocab_size, d_model)
+        
+        # Positional encoding
+        self.positional_encoding = PositionalEncoding(d_model, max_len, dropout)
+        
+        # Encoder and decoder
+        self.encoder = TransformerEncoder(d_model, num_layers, num_heads, d_ff, dropout)
+        self.decoder = TransformerDecoder(d_model, num_layers, num_heads, d_ff, dropout)
+        
+        # Output projection
+        self.output_projection = nn.Linear(d_model, tgt_vocab_size)
+        
+        # Initialize weights
+        self._init_weights()
+    
+    def _init_weights(self):
+        """
+        Initialize model weights
+        """
+        for p in self.parameters():
+            if p.dim() > 1:
+                nn.init.xavier_uniform_(p)
         
     def forward(self, src, tgt, src_mask=None, tgt_mask=None):
-        # TODO: Implement transformer forward pass
-        pass
+        """
+        Forward pass of the transformer
+        
+        Args:
+            src (torch.Tensor): Source sequence
+            tgt (torch.Tensor): Target sequence
+            src_mask (torch.Tensor, optional): Source attention mask
+            tgt_mask (torch.Tensor, optional): Target attention mask
+            
+        Returns:
+            torch.Tensor: Output logits
+        """
+        # Encode source sequence
+        encoder_output, _ = self.encode(src, src_mask)
+        
+        # Decode target sequence
+        decoder_output, _ = self.decode(tgt, encoder_output, src_mask, tgt_mask)
+        
+        # Project to vocabulary size
+        output = self.output_projection(decoder_output)
+        
+        return output
     
     def encode(self, src, src_mask=None):
         """
@@ -103,11 +151,14 @@ class Transformer(nn.Module):
             torch.Tensor: Encoder output
             list: Encoder attention weights
         """
-        # TODO: Implement encoding step
-        # 1. Source embeddings + positional encoding
-        # 2. Pass through encoder
-        # 3. Return encoder output and attention weights
-        pass
+        # Source embeddings + positional encoding
+        src_emb = self.src_embedding(src) * math.sqrt(self.d_model)
+        src_emb = self.positional_encoding(src_emb)
+        
+        # Pass through encoder
+        encoder_output, attention_weights = self.encoder(src_emb, src_mask)
+        
+        return encoder_output, attention_weights
     
     def decode(self, tgt, encoder_output, src_mask=None, tgt_mask=None):
         """
@@ -123,11 +174,16 @@ class Transformer(nn.Module):
             torch.Tensor: Decoder output
             tuple: Decoder attention weights
         """
-        # TODO: Implement decoding step
-        # 1. Target embeddings + positional encoding
-        # 2. Pass through decoder
-        # 3. Return decoder output and attention weights
-        pass
+        # Target embeddings + positional encoding
+        tgt_emb = self.tgt_embedding(tgt) * math.sqrt(self.d_model)
+        tgt_emb = self.positional_encoding(tgt_emb)
+        
+        # Pass through decoder
+        decoder_output, attention_weights = self.decoder(
+            tgt_emb, encoder_output, src_mask, tgt_mask
+        )
+        
+        return decoder_output, attention_weights
     
     def generate(self, src, src_mask=None, max_len=50, start_token=1, end_token=2):
         """
@@ -143,12 +199,39 @@ class Transformer(nn.Module):
         Returns:
             torch.Tensor: Generated sequence
         """
-        # TODO: Implement autoregressive generation
-        # 1. Encode source sequence
-        # 2. Start with start token
-        # 3. Generate tokens one by one
-        # 4. Stop when end token is generated or max_len is reached
-        pass
+        self.eval()
+        
+        # Encode source sequence
+        encoder_output, _ = self.encode(src, src_mask)
+        
+        # Initialize target sequence with start token
+        batch_size = src.size(0)
+        device = src.device
+        tgt = torch.tensor([[start_token]] * batch_size, device=device)
+        
+        # Generate tokens one by one
+        for _ in range(max_len):
+            # Create causal mask for current target sequence
+            tgt_len = tgt.size(1)
+            tgt_mask = generate_square_subsequent_mask(tgt_len).to(device)
+            
+            # Decode current target sequence
+            decoder_output, _ = self.decode(tgt, encoder_output, src_mask, tgt_mask)
+            
+            # Get next token logits (only the last position)
+            next_token_logits = self.output_projection(decoder_output[:, -1, :])
+            
+            # Sample next token (greedy decoding)
+            next_token = torch.argmax(next_token_logits, dim=-1, keepdim=True)
+            
+            # Append to target sequence
+            tgt = torch.cat([tgt, next_token], dim=1)
+            
+            # Check if all sequences have generated end token
+            if (next_token == end_token).all():
+                break
+        
+        return tgt
 
 
 def create_transformer_model(src_vocab_size, tgt_vocab_size, **kwargs):
