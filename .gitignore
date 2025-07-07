@@ -58,6 +58,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+transformer_env/
 
 # IDE
 .vscode/
@@ -76,4 +77,14 @@ checkpoints/
 
 # Logs
 logs/
-*.log 
+*.log
+
+# Test outputs
+test_results.txt
+test_output.txt
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+tmp/ 
