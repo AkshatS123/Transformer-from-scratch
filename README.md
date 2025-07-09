@@ -56,7 +56,8 @@ output = model(src_tokens, tgt_tokens)  # (batch, tgt_len, vocab_size)
 
 ## 🧪 Testing
 
-![Test Results](docs/test_results.png)
+![image](https://github.com/user-attachments/assets/d7b33ce6-6e11-461e-93de-279251448acc)
+
 
 All 27 tests pass, covering:
 - ✅ Attention mechanisms and masking
