@@ -63,7 +63,12 @@ class ScaledDotProductAttention(nn.Module):
         
         # Step 3: Apply mask if provided (for padding/causal attention)
         if mask is not None:
-            scores = scores.masked_fill(mask == 0, -1e9)
+            # Handle different mask formats
+            if mask.dtype == torch.bool:
+                scores = scores.masked_fill(mask == 0, -1e9)
+            else:
+                # For -inf masks, add them to scores
+                scores = scores + mask
         
         # Step 4: Apply softmax to get attention weights
         attention_weights = F.softmax(scores, dim=-1)

@@ -215,6 +215,10 @@ class Transformer(nn.Module):
             tgt_len = tgt.size(1)
             tgt_mask = generate_square_subsequent_mask(tgt_len).to(device)
             
+            # Expand mask to match batch size if needed
+            if tgt_mask.dim() == 2:
+                tgt_mask = tgt_mask.unsqueeze(0).expand(batch_size, -1, -1)
+            
             # Decode current target sequence
             decoder_output, _ = self.decode(tgt, encoder_output, src_mask, tgt_mask)
             
