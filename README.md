@@ -1,66 +1,75 @@
 # 🤖 Transformer from Scratch
 
-> Learning to build transformers from the ground up
+A complete PyTorch implementation of the Transformer architecture from ["Attention Is All You Need"](https://arxiv.org/abs/1706.03762).
 
-## 🎯 Project Overview
+## ✅ Features
 
-This repository documents my journey of implementing a complete Transformer architecture from scratch. The goal is to deeply understand the internals of transformers by building every component ourselves.
+- **Multi-head attention** with proper masking
+- **Encoder-decoder architecture** with residual connections
+- **Positional encoding** for sequence modeling
+- **Comprehensive test suite** (27 passing tests)
+- **Clean, documented code** for learning
 
-## 🏗️ Project Structure
+## 🚀 Quick Start
 
-```
-transformer-from-scratch/
-├── transformer/              # Core transformer implementation
-│   ├── attention.py         # Multi-head attention mechanisms
-│   ├── encoder.py           # Encoder blocks and layers
-│   ├── decoder.py           # Decoder blocks with masking
-│   ├── model.py             # Complete transformer model
-│   └── __init__.py          # Package initialization
-├── training/                # Training infrastructure
-│   ├── train.py             # Training and evaluation loops
-│   ├── dataset.py           # Data loading and preprocessing
-│   ├── optimizer.py         # Custom optimizers and schedulers
-│   └── __init__.py          # Package initialization
-├── experiments/             # Real-world applications
-│   ├── translation/         # Machine translation tasks
-│   ├── classification/      # Text classification
-│   └── generation/          # Text generation and language modeling
-├── tests/                   # Test suite
-├── examples/                # Usage examples
-├── requirements.txt         # Dependencies
-└── README.md               # This file
-```
-
-## 🚀 Getting Started
-
-# MAKE SURE TO INSTALL dependencies
+```bash
+# Install dependencies
 pip install -r requirements.txt
+
+# Run tests
+python run_tests.py
+
+# Try basic usage
+python test_implementation.py
 ```
 
-## 📚 Learning Goals
+## 📂 Structure
 
-- [x] Understand attention mechanisms
-- [x] Implement encoder-decoder architecture
-- [ ] Build training pipeline
-- [ ] Apply to real-world tasks
+```
+transformer/
+├── attention.py    # Multi-head attention mechanisms
+├── encoder.py      # Encoder blocks and layers  
+├── decoder.py      # Decoder blocks with causal masking
+└── model.py        # Complete transformer model
+```
 
-## 🔬 Key Resources
+## 🔧 Usage
 
-- [**"Attention Is All You Need"**](https://arxiv.org/abs/1706.03762) - Original transformer paper
-- [**"The Illustrated Transformer"**](http://jalammar.github.io/illustrated-transformer/) - Visual guide
-- [**PyTorch Tutorials**](https://pytorch.org/tutorials/) - Framework documentation
+```python
+from transformer.model import Transformer
 
-## 🧠 Attention Mechanism Understanding
+# Create model
+model = Transformer(
+    src_vocab_size=1000,
+    tgt_vocab_size=1000,
+    d_model=512,
+    num_layers=6,
+    num_heads=8,
+    d_ff=2048
+)
 
-**Core Formula:** `Attention(Q,K,V) = softmax(QK^T/√d_k)V`
+# Forward pass
+src_tokens = torch.randint(0, 1000, (2, 10))  # (batch, seq_len)
+tgt_tokens = torch.randint(0, 1000, (2, 8))
+output = model(src_tokens, tgt_tokens)  # (batch, tgt_len, vocab_size)
+```
 
-**Key Insights:**
-- **Query (Q)**: What we're looking for
-- **Key (K)**: What we're matching against
-- **Value (V)**: What we're retrieving
-- **√d_k scaling**: Prevents softmax saturation for stable gradients
-- **Multi-head**: Allows attending to different representation subspaces
+## 🧪 Testing
 
----
+![Test Results](docs/test_results.png)
 
-*Learning in progress...* 
+All 27 tests pass, covering:
+- ✅ Attention mechanisms and masking
+- ✅ Encoder-decoder architecture
+- ✅ Positional encoding
+- ✅ Gradient flow
+- ✅ Text generation
+
+## 📖 Key Concepts
+
+**Attention Formula:** `Attention(Q,K,V) = softmax(QK^T/√d_k)V`
+
+- **Self-attention**: Q, K, V from same sequence
+- **Cross-attention**: Q from target, K,V from source  
+- **Causal masking**: Prevents looking at future tokens
+- **Multi-head**: Parallel attention in different subspaces 

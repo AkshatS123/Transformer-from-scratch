@@ -139,7 +139,31 @@ class MultiHeadAttention(nn.Module):
         
         # Adjust mask for multiple heads if provided
         if mask is not None:
-            mask = mask.unsqueeze(1).repeat(1, self.num_heads, 1, 1)
+            # Get the actual sequence lengths from Q and K
+            q_seq_len = Q.size(2)
+            k_seq_len = K.size(2)
+            
+            # Handle different mask input shapes
+            if mask.dim() == 2:
+                # Shape: (seq_len, seq_len) -> (batch_size, num_heads, seq_len, seq_len)
+                mask = mask.unsqueeze(0).unsqueeze(0).expand(batch_size, self.num_heads, -1, -1)
+            elif mask.dim() == 3:
+                # Shape: (batch_size, seq_len, seq_len) -> (batch_size, num_heads, seq_len, seq_len)
+                mask = mask.unsqueeze(1).expand(-1, self.num_heads, -1, -1)
+            elif mask.dim() == 4:
+                # Already correct shape: (batch_size, num_heads, seq_len, seq_len)
+                pass
+            else:
+                raise ValueError(f"Unexpected mask dimension: {mask.dim()}")
+            
+            # Handle cross-attention case where mask shape doesn't match attention scores
+            if mask.size(-2) != q_seq_len or mask.size(-1) != k_seq_len:
+                # For cross-attention, we need to adapt the mask
+                # If mask is (batch_size, num_heads, src_seq_len, src_seq_len) but we need (batch_size, num_heads, tgt_seq_len, src_seq_len)
+                if mask.size(-2) == k_seq_len and mask.size(-1) == k_seq_len:
+                    # This is a source mask for cross-attention - take the key masking part
+                    # Create a mask that masks the same key positions for all queries
+                    mask = mask[:, :, :1, :].expand(-1, -1, q_seq_len, -1)
         
         # Step 3: Apply scaled dot-product attention to each head
         attention_output, attention_weights = self.attention(Q, K, V, mask)
