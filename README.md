@@ -1,4 +1,4 @@
-# 🤖 I Built a Transformer from Scratch(I'm cracked :))))
+# Transforner from scratch 
 
 A complete PyTorch implementation of the Transformer architecture from ["Attention Is All You Need"](https://arxiv.org/abs/1706.03762).
 
