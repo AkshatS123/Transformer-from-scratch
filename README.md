@@ -2,7 +2,7 @@
 
 A complete PyTorch implementation of the Transformer architecture from ["Attention Is All You Need"](https://arxiv.org/abs/1706.03762).
 
-## ✅ Features
+##  Features
 
 - **Multi-head attention** with proper masking
 - **Encoder-decoder architecture** with residual connections
@@ -10,7 +10,7 @@ A complete PyTorch implementation of the Transformer architecture from ["Attenti
 - **Comprehensive test suite** (27 passing tests)
 - **Clean, documented code** for learning
 
-## 🚀 Quick Start
+## Quick Start
 
 ```bash
 # Install dependencies
@@ -23,7 +23,7 @@ python run_tests.py
 python test_implementation.py
 ```
 
-## 📂 Structure
+## Structure
 
 ```
 transformer/
@@ -33,7 +33,7 @@ transformer/
 └── model.py        # Complete transformer model
 ```
 
-## 🔧 Usage
+## Usage
 
 ```python
 from transformer.model import Transformer
@@ -54,19 +54,19 @@ tgt_tokens = torch.randint(0, 1000, (2, 8))
 output = model(src_tokens, tgt_tokens)  # (batch, tgt_len, vocab_size)
 ```
 
-## 🧪 Testing
+## Testing
 
 ![image](https://github.com/user-attachments/assets/d7b33ce6-6e11-461e-93de-279251448acc)
 
 
 All 27 tests pass, covering:
-- ✅ Attention mechanisms and masking
-- ✅ Encoder-decoder architecture
-- ✅ Positional encoding
-- ✅ Gradient flow
-- ✅ Text generation
+- Attention mechanisms and masking
+-  Encoder-decoder architecture
+-  Positional encoding
+-  Gradient flow
+-  Text generation
 
-## 📖 Key Concepts
+##  Key Concepts
 
 **Attention Formula:** `Attention(Q,K,V) = softmax(QK^T/√d_k)V`
 
